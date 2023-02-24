@@ -3,6 +3,7 @@ import setup from "./middlewares/setup";
 import { configure_passport } from "./middlewares/passport_strats";
 
 const app = express();
+
 setup(app);
 configure_passport(app);
 

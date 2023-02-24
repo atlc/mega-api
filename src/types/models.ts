@@ -1,3 +1,5 @@
+// START AUTH DB
+
 export type UserRoles = "user" | "admin";
 
 export type UserLocatableColumns = "id" | "username" | "email";
@@ -16,3 +18,19 @@ export interface BaseUser {
     username: string;
     password?: string;
 }
+
+// END AUTH DB
+
+// START TODO DB
+export interface BaseItem {
+    id: string;
+    userid: string;
+    content: string;
+}
+
+export interface Item extends BaseItem {
+    completed: boolean;
+    created_at: string | Date;
+    updated_at: string | Date;
+}
+// END TODO DB
