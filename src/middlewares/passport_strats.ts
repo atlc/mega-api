@@ -7,7 +7,7 @@ import { compare } from "../utils/bcrypt";
 import { is_email } from "../utils/validators";
 import { token } from "../config";
 import Users from "../database/queries/users";
-import { UserLocatableColumns } from "../types/models";
+import { UserLocatableColumns } from "../types/models/auth";
 
 export const configure_passport = (app: Express) => {
     passport.use(

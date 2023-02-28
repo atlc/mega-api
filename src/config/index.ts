@@ -8,7 +8,7 @@ interface DBConfig {
     database: string;
 }
 
-export type db_keys = "auth" | "todo";
+export type db_keys = "auth" | "todo" | "notes";
 
 export const sql = {
     auth: {
@@ -22,6 +22,12 @@ export const sql = {
         password: process.env.TODO_DB_PASSWORD,
         host: process.env.TODO_DB_HOST,
         database: process.env.TODO_DB_NAME
+    },
+    notes: {
+        user: process.env.NOTES_DB_USER,
+        password: process.env.NOTES_DB_PASSWORD,
+        host: process.env.NOTES_DB_HOST,
+        database: process.env.NOTES_DB_NAME
     }
 } as { [key: string]: DBConfig };
 

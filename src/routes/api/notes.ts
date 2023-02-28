@@ -1,15 +1,16 @@
 import express from "express";
 import { v4 } from "uuid";
-import Items from "../../database/queries/todo";
+import Notes from "../../database/queries/notes";
 import { has_missing_data } from "../../utils/validators";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
     if (!req.user) return res.status(401).json({ message: "Unable to authenticate user" });
+
     try {
-        const items = await Items.all(req.user.id);
-        res.json(items);
+        const notes = await Notes.all(req.user.id);
+        res.json(notes);
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "An error occurred!" });
@@ -19,9 +20,28 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
     const id = req.params.id;
     if (!req.user) return res.status(401).json({ message: "Unable to authenticate user" });
+
     try {
-        const items = await Items.one(req.user.id, id);
-        res.json(items);
+        const [note] = await Notes.one(req.user.id, id);
+
+        if (!note) {
+            res.status(404).json({ message: "Sorry Mario, but the note is in another castle!" });
+        } else {
+            res.json(note);
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "An error occurred!" });
+    }
+});
+
+router.delete("/:id", async (req, res) => {
+    const id = req.params.id;
+    if (!req.user) return res.status(401).json({ message: "Unable to authenticate user" });
+
+    try {
+        await Notes.remove(req.user.id, id);
+        res.json({ message: "Deleted successfully!" });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "An error occurred!" });
@@ -32,15 +52,14 @@ router.post("/", async (req, res) => {
     if (!req.user) return res.status(401).json({ message: "Unable to authenticate user" });
 
     const { content } = req.body;
-    if (!content) return res.status(400).json({ message: "Missing content property" });
-
-    const id = v4();
+    if (has_missing_data({ content }, res)) return;
 
     try {
-        const newItem = { id, userid: req.user.id, content };
-        await Items.create(newItem);
+        const id = v4();
+        const newNote = { id, userid: req.user.id, content };
 
-        res.status(201).json({ message: "Item successfully created!", id });
+        await Notes.create(newNote);
+        res.status(201).json({ message: "Note successfully created!", id });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "An error occurred!" });
@@ -49,39 +68,14 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
     const id = req.params.id;
-    const { content } = req.body;
     if (!req.user) return res.status(401).json({ message: "Unable to authenticate user" });
+
+    const { content } = req.body;
     if (has_missing_data({ content }, res)) return;
 
     try {
-        await Items.update_content(content, req.user.id, id);
-        res.status(201).json({ message: "Successfully updated content!" });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "An error occurred!" });
-    }
-});
-
-router.put("/:id/toggle", async (req, res) => {
-    const id = req.params.id;
-    const { current_status } = req.body;
-    if (!req.user) return res.status(401).json({ message: "Unable to authenticate user" });
-
-    try {
-        await Items.toggle_completion(current_status, id, req.user.id);
-        res.status(201).json({ message: "Successfully updated item!" });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "An error occurred!" });
-    }
-});
-
-router.delete("/:id", async (req, res) => {
-    const id = req.params.id;
-    if (!req.user) return res.status(401).json({ message: "Unable to authenticate user" });
-    try {
-        await Items.remove(req.user.id, id);
-        res.json({ message: "Sucessfully baleeted" });
+        await Notes.update(content, id, req.user.id);
+        res.status(201).json({ message: "Note successfully updated!" });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "An error occurred!" });
